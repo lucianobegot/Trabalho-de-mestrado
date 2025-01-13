@@ -1,15 +1,15 @@
-using JuMP, NLPModels, NLPModelsJuMP, LinearAlgebra, PlotlyJS, Plots, BenchmarkTools
+using JuMP, NLPModels, NLPModelsJuMP, LinearAlgebra, PlotlyJS, Plots, BenchmarkTools, CPLEX
 
 include("Problemas.jl")
 include("metrica.jl")
 include("Auxiliar.jl")
-include("check pareto critico.jl")
 
 @time begin
 # Escolhendo o problema a ser resolvido
 problema = 29
 funcoes = matriz_de_problemas[problema]
 vars = variaveis[problema] #número de variáveis do problema
+include("check pareto critico.jl")
 
 # Ponto onde queremos calcular o gradiente
 a = -1.  # Valor inicial do intervalo do ponto inicial
