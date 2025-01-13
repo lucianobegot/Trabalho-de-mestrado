@@ -1,7 +1,8 @@
-using JuMP, NLPModels, NLPModelsJuMP, Clp, Ipopt, LinearAlgebra, PlotlyJS, Plots, BenchmarkTools
+using JuMP, NLPModels, NLPModelsJuMP, LinearAlgebra, PlotlyJS, Plots, BenchmarkTools
 
 include("Problemas.jl")
 include("metrica.jl")
+include("Auxiliar.jl")
 include("check pareto critico.jl")
 
 @time begin
@@ -48,7 +49,7 @@ end
 function mgrad(x, itmax)
     e = 1.0e-6
     #c = Inf
-    c = 1.0e-5
+    c = 1.0e-1
     b = deepcopy(x)
     k = 0
     alpha = 0.01
@@ -59,7 +60,7 @@ function mgrad(x, itmax)
     b_values = zeros(Float64, 1, length(b))
     b_values[1, :] .= b
 
-    while maximum(abs.(g)) >= e && k < itmax #&& maximum(abs.(g)) <= 100
+    while maximum(abs.(g)) >= e && k < itmax
         g = gradiente(Fp, b)
         d = -1 * g
         t = 1.0
@@ -92,26 +93,18 @@ function mgrad(x, itmax)
     return b, b_values
 end
 
-
-
 # Parâmetros do método
 itmax = 1000
-
-# Tamanho do passo h (pode ser ajustado conforme necessário)
-h = 1.0e-6
 
 # Número de funções
 num_funcoes = length(funcoes)
 
-
 pontos_pareto = mgrad(x0[1,:], itmax)[2]
-
 
 for i in 2:nx0
     global p = gerar_pesos(x0raw[i,:],length(funcoes))
     global pontos_pareto = vcat(pontos_pareto, mgrad(x0[i,:], itmax)[2])
 end
-
 
 paretovar, pontos_pareto = remover_pontos_dominados_var_otimizado(pontos_pareto,funcoes)
 
