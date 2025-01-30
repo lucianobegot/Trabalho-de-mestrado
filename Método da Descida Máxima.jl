@@ -4,14 +4,16 @@ include("Problemas.jl")
 include("metrica.jl")
 include("Auxiliar.jl")
 @time begin
-# Escolhendo problema a ser resolvido
-problema = 29
-funcoes = matriz_de_problemas[problema]
-vars = variaveis[problema] #número de variáveis do problema
+
+# Escolhendo o problema a ser resolvido
+idx = 9 #Índice do problema na lista de problemas
+problema = problems[idx]
+funcoes = problema.objectives
+vars = problema.nvars #número de variáveis do problema
 
 # Ponto onde queremos calcular o gradiente
-a = -1.  # Valor inicial do intervalo do ponto inicial 
-b = 1.  # Valor final do intervalo do ponto inicial
+a = problema.lb  # Valor inicial do intervalo do ponto inicial
+b = problema.ub # Valor final do intervalo do ponto inicial
 
 nx0 = 500
 
