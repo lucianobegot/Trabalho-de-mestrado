@@ -1,4 +1,4 @@
-using JuMP, NLPModels, NLPModelsJuMP, LinearAlgebra, PlotlyJS, Plots, BenchmarkTools, CPLEX
+using JuMP, NLPModels, NLPModelsJuMP, CPLEX, Ipopt, LinearAlgebra, PlotlyJS, Plots, BenchmarkTools
 
 include("Problemas.jl")
 include("metrica.jl")
@@ -6,16 +6,17 @@ include("Auxiliar.jl")
 
 @time begin
 # Escolhendo o problema a ser resolvido
-problema = 29
-funcoes = matriz_de_problemas[problema]
-vars = variaveis[problema] #número de variáveis do problema
-include("check pareto critico.jl")
+# Escolhendo o problema a ser resolvido
+idx = 32 #Índice do problema na lista de problemas
+problema = problems[idx]
+funcoes = problema.objectives
+vars = problema.nvars #número de variáveis do problema
 
 # Ponto onde queremos calcular o gradiente
-a = -1.  # Valor inicial do intervalo do ponto inicial
-b = 1. # Valor final do intervalo do ponto inicial
+a = problema.lb  # Valor inicial do intervalo do ponto inicial
+b = problema.ub # Valor final do intervalo do ponto inicial
 
-nx0 = 150 #Número de pontos iniciais
+nx0 = 500 #Número de pontos iniciais
 
 x0raw = readdlm("x0.txt",Float64)
 x0 = zeros(nx0, vars)
@@ -60,7 +61,7 @@ function mgrad(x, itmax)
     b_values = zeros(Float64, 1, length(b))
     b_values[1, :] .= b
 
-    while maximum(abs.(g)) >= e && k < itmax
+    while maximum(abs.(g)) >= e && k < itmax #&& maximum(abs.(g)) <= 100
         g = gradiente(Fp, b)
         d = -1 * g
         t = 1.0
@@ -93,20 +94,27 @@ function mgrad(x, itmax)
     return b, b_values
 end
 
+
+
 # Parâmetros do método
 itmax = 1000
 
 # Número de funções
 num_funcoes = length(funcoes)
 
+
 pontos_pareto = mgrad(x0[1,:], itmax)[2]
+
 
 for i in 2:nx0
     global p = gerar_pesos(x0raw[i,:],length(funcoes))
     global pontos_pareto = vcat(pontos_pareto, mgrad(x0[i,:], itmax)[2])
 end
 
+println(length(pontos_pareto))
 paretovar, pontos_pareto = remover_pontos_dominados_var_otimizado(pontos_pareto,funcoes)
+
+include("check pareto critico.jl")
 
 check = []
 
